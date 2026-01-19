@@ -120,6 +120,15 @@
         .login {
             display: none;
         }
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #FFF3E0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            display: none;
+        }
     </style>
 </head>
 
@@ -128,6 +137,13 @@
         <div class="form-container">
             <h2 id="title">산타마리24의원 온라인 접수</h2>
             <p class="notice">접수가 정상적으로 되었는지 확인을 위해<br>병원에 도착시 접수 상태를 꼭 확인해 주세요.</p>
+            
+            <!-- 디버그 정보 표시 -->
+            <div class="debug-info" id="debugInfo">
+                <strong>저장 상태:</strong> <span id="storageStatus"></span><br>
+                <strong>저장된 환자 수:</strong> <span id="patientCount"></span>
+            </div>
+            
             <form id="receptionForm">
                 <input type="text" name="name" placeholder="이름" required>
                 
@@ -174,26 +190,101 @@
         const correctPassword = "1";
         let count = 0;
         let deleteIndex = null;
+        let patients = [];
+
+        // 로컬스토리지 지원 여부 확인
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
 
         // 로컬스토리지에서 환자 목록 불러오기
         function loadPatients() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            return stored ? JSON.parse(stored) : [];
+            try {
+                if (!isLocalStorageAvailable()) {
+                    console.error('로컬스토리지를 사용할 수 없습니다.');
+                    updateDebugInfo('로컬스토리지 사용 불가', 0);
+                    return [];
+                }
+                
+                const stored = localStorage.getItem(STORAGE_KEY);
+                console.log('불러온 데이터:', stored);
+                
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    console.log('파싱된 데이터:', parsed);
+                    updateDebugInfo('정상', parsed.length);
+                    return parsed;
+                }
+                
+                updateDebugInfo('데이터 없음', 0);
+                return [];
+            } catch(e) {
+                console.error('데이터 불러오기 오류:', e);
+                updateDebugInfo('오류 발생', 0);
+                return [];
+            }
         }
 
         // 로컬스토리지에 환자 목록 저장하기
-        function savePatients(patients) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+        function savePatients(patientsData) {
+            try {
+                if (!isLocalStorageAvailable()) {
+                    console.error('로컬스토리지를 사용할 수 없습니다.');
+                    alert('브라우저 설정으로 인해 데이터를 저장할 수 없습니다.');
+                    return false;
+                }
+                
+                const jsonString = JSON.stringify(patientsData);
+                localStorage.setItem(STORAGE_KEY, jsonString);
+                console.log('저장 완료:', jsonString);
+                
+                // 저장 확인
+                const verification = localStorage.getItem(STORAGE_KEY);
+                if (verification === jsonString) {
+                    console.log('저장 확인 성공');
+                    updateDebugInfo('정상', patientsData.length);
+                    return true;
+                } else {
+                    console.error('저장 확인 실패');
+                    return false;
+                }
+            } catch(e) {
+                console.error('데이터 저장 오류:', e);
+                alert('데이터 저장 중 오류가 발생했습니다: ' + e.message);
+                return false;
+            }
+        }
+
+        // 디버그 정보 업데이트
+        function updateDebugInfo(status, count) {
+            document.getElementById('storageStatus').textContent = status;
+            document.getElementById('patientCount').textContent = count;
         }
 
         // 페이지 로드 시 환자 목록 불러오기
-        let patients = loadPatients();
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('페이지 로드 시작');
+            patients = loadPatients();
+            console.log('불러온 환자 수:', patients.length);
+            
+            // 디버그 정보 표시 (개발 중에만)
+            // document.getElementById('debugInfo').style.display = 'block';
+        });
 
         // "수" 클릭 시 로그인 버튼 표시
         document.getElementById('title').addEventListener('click', function() {
             count++;
             if (count === 3) {
                 document.getElementById('loginSection').style.display = 'block';
+                // 디버그 정보도 표시
+                document.getElementById('debugInfo').style.display = 'block';
             }
         });
 
@@ -205,21 +296,32 @@
             const birthdate = this.birthdate.value;
             const gender = this.gender.value;
             const symptoms = this.symptoms.value;
-            const timestamp = new Date().toISOString(); // 접수 시간 추가
+            const timestamp = new Date().toISOString();
 
             // 환자 정보를 배열에 추가
-            patients.push({ name, birthdate, gender, symptoms, timestamp });
+            const newPatient = { name, birthdate, gender, symptoms, timestamp };
+            patients.push(newPatient);
+            
+            console.log('새 환자 추가:', newPatient);
+            console.log('현재 환자 목록:', patients);
             
             // 로컬스토리지에 저장
-            savePatients(patients);
-
-            // 환자 목록 표시 (로그인된 경우에만)
-            if (document.getElementById('patientList').style.display === 'block') {
-                displayPatients();
+            const saveSuccess = savePatients(patients);
+            
+            if (saveSuccess) {
+                alert('접수가 완료되었습니다!');
+                
+                // 환자 목록 표시 (로그인된 경우에만)
+                if (document.getElementById('patientList').style.display === 'block') {
+                    displayPatients();
+                }
+                
+                this.reset();
+            } else {
+                alert('접수 저장에 실패했습니다. 다시 시도해주세요.');
+                // 실패 시 배열에서 제거
+                patients.pop();
             }
-
-            alert('접수가 완료되었습니다!');
-            this.reset();
         });
 
         // 로그인 버튼 클릭 시
@@ -230,6 +332,7 @@
             if (username === correctUsername && password === correctPassword) {
                 document.getElementById('patientList').style.display = 'block';
                 displayPatients();
+                document.getElementById('debugInfo').style.display = 'block';
             } else {
                 alert('잘못된 사용자 이름 또는 비밀번호입니다.');
             }
@@ -281,7 +384,7 @@
         // 삭제 확인
         document.getElementById('confirmDelete').addEventListener('click', function() {
             patients.splice(deleteIndex, 1);
-            savePatients(patients); // 로컬스토리지에 저장
+            savePatients(patients);
             displayPatients();
             document.getElementById('confirmationDialog').style.display = 'none';
             deleteIndex = null;
@@ -298,7 +401,7 @@
             if ((event.key === 'Enter' || event.key === ' ') && deleteIndex !== null) {
                 event.preventDefault();
                 patients.splice(deleteIndex, 1);
-                savePatients(patients); // 로컬스토리지에 저장
+                savePatients(patients);
                 displayPatients();
                 document.getElementById('confirmationDialog').style.display = 'none';
                 deleteIndex = null;
