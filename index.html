@@ -120,14 +120,10 @@
         .login {
             display: none;
         }
-        .debug-info {
-            margin-top: 20px;
-            padding: 10px;
-            background: #FFF3E0;
-            border-radius: 8px;
-            font-size: 12px;
+        .loading {
+            text-align: center;
             color: #666;
-            display: none;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -137,12 +133,6 @@
         <div class="form-container">
             <h2 id="title">산타마리24의원 온라인 접수</h2>
             <p class="notice">접수가 정상적으로 되었는지 확인을 위해<br>병원에 도착시 접수 상태를 꼭 확인해 주세요.</p>
-            
-            <!-- 디버그 정보 표시 -->
-            <div class="debug-info" id="debugInfo">
-                <strong>저장 상태:</strong> <span id="storageStatus"></span><br>
-                <strong>저장된 환자 수:</strong> <span id="patientCount"></span>
-            </div>
             
             <form id="receptionForm">
                 <input type="text" name="name" placeholder="이름" required>
@@ -166,125 +156,57 @@
                 <h3>병원 직원 로그인</h3>
                 <input type="text" id="username" placeholder="사용자 이름" required>
                 <input type="password" id="password" placeholder="비밀번호" required>
-                <button id="loginButton">로그인</button>
+                <button type="button" id="loginButton">로그인</button>
             </div>
         </div>
 
         <div class="patient-list" id="patientList">
             <h3>접수된 환자 목록</h3>
+            <div class="loading" id="loadingMessage">데이터를 불러오는 중...</div>
             <div id="patients"></div>
         </div>
     </div>
 
     <div class="confirmation" id="confirmationDialog">
         <p>삭제하시겠습니까?</p>
-        <button id="confirmDelete">예</button>
-        <button id="cancelDelete">아니오</button>
+        <button type="button" id="confirmDelete">예</button>
+        <button type="button" id="cancelDelete">아니오</button>
     </div>
 
-    <script>
-        // 로컬스토리지 키
-        const STORAGE_KEY = 'santamari24_patients';
-        
+    <!-- Firebase SDK (v9 모듈 방식) -->
+    <script type="module">
+        // Firebase 모듈 import
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
+            authDomain: "santa-c17dd.firebaseapp.com",
+            databaseURL: "https://santa-c17dd-default-rtdb.firebaseio.com",
+            projectId: "santa-c17dd",
+            storageBucket: "santa-c17dd.firebasestorage.app",
+            messagingSenderId: "559395228968",
+            appId: "1:559395228968:web:6a037c35531b9d744d141d",
+            measurementId: "G-GB2SES5TNL"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const patientsRef = ref(database, 'patients');
+
         const correctUsername = "1";
         const correctPassword = "1";
         let count = 0;
-        let deleteIndex = null;
-        let patients = [];
-
-        // 로컬스토리지 지원 여부 확인
-        function isLocalStorageAvailable() {
-            try {
-                const test = '__localStorage_test__';
-                localStorage.setItem(test, test);
-                localStorage.removeItem(test);
-                return true;
-            } catch(e) {
-                return false;
-            }
-        }
-
-        // 로컬스토리지에서 환자 목록 불러오기
-        function loadPatients() {
-            try {
-                if (!isLocalStorageAvailable()) {
-                    console.error('로컬스토리지를 사용할 수 없습니다.');
-                    updateDebugInfo('로컬스토리지 사용 불가', 0);
-                    return [];
-                }
-                
-                const stored = localStorage.getItem(STORAGE_KEY);
-                console.log('불러온 데이터:', stored);
-                
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    console.log('파싱된 데이터:', parsed);
-                    updateDebugInfo('정상', parsed.length);
-                    return parsed;
-                }
-                
-                updateDebugInfo('데이터 없음', 0);
-                return [];
-            } catch(e) {
-                console.error('데이터 불러오기 오류:', e);
-                updateDebugInfo('오류 발생', 0);
-                return [];
-            }
-        }
-
-        // 로컬스토리지에 환자 목록 저장하기
-        function savePatients(patientsData) {
-            try {
-                if (!isLocalStorageAvailable()) {
-                    console.error('로컬스토리지를 사용할 수 없습니다.');
-                    alert('브라우저 설정으로 인해 데이터를 저장할 수 없습니다.');
-                    return false;
-                }
-                
-                const jsonString = JSON.stringify(patientsData);
-                localStorage.setItem(STORAGE_KEY, jsonString);
-                console.log('저장 완료:', jsonString);
-                
-                // 저장 확인
-                const verification = localStorage.getItem(STORAGE_KEY);
-                if (verification === jsonString) {
-                    console.log('저장 확인 성공');
-                    updateDebugInfo('정상', patientsData.length);
-                    return true;
-                } else {
-                    console.error('저장 확인 실패');
-                    return false;
-                }
-            } catch(e) {
-                console.error('데이터 저장 오류:', e);
-                alert('데이터 저장 중 오류가 발생했습니다: ' + e.message);
-                return false;
-            }
-        }
-
-        // 디버그 정보 업데이트
-        function updateDebugInfo(status, count) {
-            document.getElementById('storageStatus').textContent = status;
-            document.getElementById('patientCount').textContent = count;
-        }
-
-        // 페이지 로드 시 환자 목록 불러오기
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('페이지 로드 시작');
-            patients = loadPatients();
-            console.log('불러온 환자 수:', patients.length);
-            
-            // 디버그 정보 표시 (개발 중에만)
-            // document.getElementById('debugInfo').style.display = 'block';
-        });
+        let deleteKey = null;
+        let isLoggedIn = false;
 
         // "수" 클릭 시 로그인 버튼 표시
         document.getElementById('title').addEventListener('click', function() {
             count++;
             if (count === 3) {
                 document.getElementById('loginSection').style.display = 'block';
-                // 디버그 정보도 표시
-                document.getElementById('debugInfo').style.display = 'block';
             }
         });
 
@@ -298,30 +220,24 @@
             const symptoms = this.symptoms.value;
             const timestamp = new Date().toISOString();
 
-            // 환자 정보를 배열에 추가
-            const newPatient = { name, birthdate, gender, symptoms, timestamp };
-            patients.push(newPatient);
-            
-            console.log('새 환자 추가:', newPatient);
-            console.log('현재 환자 목록:', patients);
-            
-            // 로컬스토리지에 저장
-            const saveSuccess = savePatients(patients);
-            
-            if (saveSuccess) {
-                alert('접수가 완료되었습니다!');
-                
-                // 환자 목록 표시 (로그인된 경우에만)
-                if (document.getElementById('patientList').style.display === 'block') {
-                    displayPatients();
-                }
-                
-                this.reset();
-            } else {
-                alert('접수 저장에 실패했습니다. 다시 시도해주세요.');
-                // 실패 시 배열에서 제거
-                patients.pop();
-            }
+            // Firebase에 데이터 저장
+            const newPatient = {
+                name: name,
+                birthdate: birthdate,
+                gender: gender,
+                symptoms: symptoms,
+                timestamp: timestamp
+            };
+
+            push(patientsRef, newPatient)
+                .then(() => {
+                    alert('접수가 완료되었습니다!');
+                    this.reset();
+                })
+                .catch((error) => {
+                    console.error('접수 오류:', error);
+                    alert('접수 중 오류가 발생했습니다. 다시 시도해주세요.');
+                });
         });
 
         // 로그인 버튼 클릭 시
@@ -330,81 +246,114 @@
             const password = document.getElementById('password').value;
 
             if (username === correctUsername && password === correctPassword) {
+                isLoggedIn = true;
                 document.getElementById('patientList').style.display = 'block';
-                displayPatients();
-                document.getElementById('debugInfo').style.display = 'block';
+                loadPatients();
             } else {
                 alert('잘못된 사용자 이름 또는 비밀번호입니다.');
             }
         });
 
-        function displayPatients() {
-            const patientsDiv = document.getElementById('patients');
-            patientsDiv.innerHTML = '';
+        // Firebase에서 환자 목록 실시간 불러오기
+        function loadPatients() {
+            document.getElementById('loadingMessage').style.display = 'block';
+            
+            onValue(patientsRef, (snapshot) => {
+                const patientsDiv = document.getElementById('patients');
+                patientsDiv.innerHTML = '';
+                document.getElementById('loadingMessage').style.display = 'none';
 
-            if (patients.length === 0) {
-                patientsDiv.innerHTML = '<p style="text-align: center; color: #666;">접수된 환자가 없습니다.</p>';
-                return;
-            }
+                if (!snapshot.exists()) {
+                    patientsDiv.innerHTML = '<p style="text-align: center; color: #666;">접수된 환자가 없습니다.</p>';
+                    return;
+                }
 
-            patients.forEach((patient, index) => {
-                const patientDiv = document.createElement('div');
-                patientDiv.classList.add('patient-item');
-                
-                const patientInfo = document.createElement('div');
-                patientInfo.classList.add('patient-info');
-                
-                // 접수 시간 포맷팅
-                const receptionTime = new Date(patient.timestamp).toLocaleString('ko-KR');
-                
-                patientInfo.innerHTML = `
-                    <strong>${index + 1}번</strong> 이름: ${patient.name}, 생년월일: ${patient.birthdate}, 성별: ${patient.gender}
-                    <br>증상: ${patient.symptoms}
-                    <br><small style="color: #666;">접수시간: ${receptionTime}</small>
-                `;
+                const patients = [];
+                snapshot.forEach((childSnapshot) => {
+                    patients.push({
+                        key: childSnapshot.key,
+                        data: childSnapshot.val()
+                    });
+                });
 
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = '삭제';
-                deleteButton.classList.add('delete-button');
-                deleteButton.onclick = function() {
-                    confirmDelete(index);
-                };
+                // 시간순으로 정렬 (최신순)
+                patients.sort((a, b) => new Date(a.data.timestamp) - new Date(b.data.timestamp));
 
-                patientDiv.appendChild(patientInfo);
-                patientDiv.appendChild(deleteButton);
-                patientsDiv.appendChild(patientDiv);
+                // 환자 목록 표시
+                patients.forEach((patient, index) => {
+                    const patientDiv = document.createElement('div');
+                    patientDiv.classList.add('patient-item');
+                    
+                    const patientInfo = document.createElement('div');
+                    patientInfo.classList.add('patient-info');
+                    
+                    const receptionTime = new Date(patient.data.timestamp).toLocaleString('ko-KR');
+                    
+                    patientInfo.innerHTML = `
+                        <strong>${index + 1}번</strong> 이름: ${patient.data.name}, 생년월일: ${patient.data.birthdate}, 성별: ${patient.data.gender}
+                        <br>증상: ${patient.data.symptoms}
+                        <br><small style="color: #666;">접수시간: ${receptionTime}</small>
+                    `;
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = '삭제';
+                    deleteButton.classList.add('delete-button');
+                    deleteButton.onclick = function() {
+                        confirmDelete(patient.key);
+                    };
+
+                    patientDiv.appendChild(patientInfo);
+                    patientDiv.appendChild(deleteButton);
+                    patientsDiv.appendChild(patientDiv);
+                });
+            }, (error) => {
+                console.error('데이터 불러오기 오류:', error);
+                document.getElementById('loadingMessage').textContent = '데이터를 불러올 수 없습니다.';
             });
         }
 
-        function confirmDelete(index) {
-            deleteIndex = index;
+        function confirmDelete(key) {
+            deleteKey = key;
             document.getElementById('confirmationDialog').style.display = 'block';
         }
 
         // 삭제 확인
         document.getElementById('confirmDelete').addEventListener('click', function() {
-            patients.splice(deleteIndex, 1);
-            savePatients(patients);
-            displayPatients();
+            if (deleteKey) {
+                const patientToDelete = ref(database, 'patients/' + deleteKey);
+                remove(patientToDelete)
+                    .then(() => {
+                        console.log('환자 삭제 완료');
+                    })
+                    .catch((error) => {
+                        console.error('삭제 오류:', error);
+                        alert('삭제 중 오류가 발생했습니다.');
+                    });
+            }
             document.getElementById('confirmationDialog').style.display = 'none';
-            deleteIndex = null;
+            deleteKey = null;
         });
 
         // 삭제 취소
         document.getElementById('cancelDelete').addEventListener('click', function() {
             document.getElementById('confirmationDialog').style.display = 'none';
-            deleteIndex = null;
+            deleteKey = null;
         });
 
         // 키보드 이벤트
         document.addEventListener('keydown', function(event) {
-            if ((event.key === 'Enter' || event.key === ' ') && deleteIndex !== null) {
+            if ((event.key === 'Enter' || event.key === ' ') && deleteKey !== null) {
                 event.preventDefault();
-                patients.splice(deleteIndex, 1);
-                savePatients(patients);
-                displayPatients();
+                const patientToDelete = ref(database, 'patients/' + deleteKey);
+                remove(patientToDelete)
+                    .then(() => {
+                        console.log('환자 삭제 완료');
+                    })
+                    .catch((error) => {
+                        console.error('삭제 오류:', error);
+                    });
                 document.getElementById('confirmationDialog').style.display = 'none';
-                deleteIndex = null;
+                deleteKey = null;
             }
         });
     </script>
