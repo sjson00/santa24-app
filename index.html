@@ -4,35 +4,15 @@
     <meta charset="UTF-8">
     <title>산타마리24의원 접수</title>
 
-    <!-- Firebase SDK 추가 -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script>
-        // Firebase 초기화
-        const firebaseConfig = {
-            apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
-            authDomain: "santa-c17dd.firebaseapp.com",
-            databaseURL: "https://santa-c17dd-default-rtdb.firebaseio.com",
-            projectId: "santa-c17dd",
-            storageBucket: "santa-c17dd.firebasestorage.app",
-            messagingSenderId: "559395228968",
-            appId: "1:559395228968:web:6a037c35531b9d744d141d",
-            measurementId: "G-GB2SES5TNL"
-        };
-        // Firebase 앱 초기화
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-    </script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #E3F2FD;
-            margin: 0; /* 기본 margin 제거 */
-            padding: 0; /* 기본 padding 제거 */
+            margin: 0;
+            padding: 0;
         }
         .container {
-            display: flex; /* Flexbox로 레이아웃 구성 */
+            display: flex;
             max-width: 900px;
             margin: 40px auto;
             background: white;
@@ -41,27 +21,27 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .form-container {
-            flex: 1; /* 왼쪽 영역 비율 */
-            padding-right: 20px; /* 오른쪽 여백 */
+            flex: 1;
+            padding-right: 20px;
         }
         .patient-list {
-            width: 400px; /* 오른쪽 영역 너비를 넓힘 */
+            width: 400px;
             padding: 10px;
             background: #F1F8E9;
             border-radius: 8px;
             max-height: 400px;
             overflow-y: auto;
-            display: none; /* 기본적으로 숨김 */
+            display: none;
         }
         h2 {
             text-align: center;
             color: #1E88E5;
-            cursor: pointer; /* 클릭 가능하게 설정 */
+            cursor: pointer;
         }
         .notice {
             margin: 10px 0;
             text-align: center;
-            color: #FF5722;  /* 경고색 */
+            color: #FF5722;
             font-size: 14px;
         }
         input, textarea {
@@ -74,16 +54,16 @@
         }
         .gender-container {
             display: flex;
-            justify-content: center; /* 중앙 정렬 */
+            justify-content: center;
             margin-top: 10px;
         }
         .gender-container label {
-            margin: 0 20px; /* 간격 조정 */
-            font-size: 18px; /* 글자 크기 증가 */
+            margin: 0 20px;
+            font-size: 18px;
         }
         .gender-container input {
-            transform: scale(1.5); /* 체크박스 크기 키우기 */
-            margin-right: 5px; /* 체크박스와 레이블 간격 조정 */
+            transform: scale(1.5);
+            margin-right: 5px;
         }
         button {
             margin-top: 16px;
@@ -102,37 +82,43 @@
         .patient-item {
             border-bottom: 1px solid #ccc;
             padding: 5px 0;
-            display: flex; /* 플렉스 박스 사용 */
-            justify-content: space-between; /* 양쪽 정렬 */
-            align-items: center; /* 수직 가운데 정렬 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .patient-info {
-            flex: 1; /* 정보 영역을 차지 */
-            display: flex; /* 내부 요소를 플렉스 박스로 배치 */
-            flex-direction: column; /* 세로 방향으로 배치 */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         .delete-button {
-            background: #FF5722; /* 삭제 버튼 색상 */
+            background: #FF5722;
             border: none;
             color: white;
             border-radius: 8px;
-            padding: 3px 6px; /* 버튼 크기 줄이기 */
+            padding: 3px 6px;
             cursor: pointer;
-            font-size: 14px; /* 글자 크기 줄이기 */
-            width: 80px; /* 삭제 버튼의 넓이를 줄임 */
+            font-size: 14px;
+            width: 80px;
         }
         .delete-button:hover {
-            background: #D32F2F; /* 삭제 버튼 hover 색상 */
+            background: #D32F2F;
         }
         .confirmation {
-            display: none; /* 기본적으로 숨김 */
+            display: none;
             margin-top: 20px;
             padding: 10px;
-            background: #FFEB3B; /* 경고 색상 */
+            background: #FFEB3B;
             border-radius: 8px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         .login {
-            display: none; /* 기본적으로 숨김 */
+            display: none;
         }
     </style>
 </head>
@@ -181,38 +167,59 @@
     </div>
 
     <script>
-        const patients = []; // 환자 목록을 저장할 배열
-        const correctUsername = "1"; // 직원 사용자 이름
-        const correctPassword = "1"; // 직원 비밀번호
-        let count = 0; // "수" 클릭 카운트
-        let deleteIndex = null; // 삭제할 환자 인덱스 저장
+        // 로컬스토리지 키
+        const STORAGE_KEY = 'santamari24_patients';
+        
+        const correctUsername = "1";
+        const correctPassword = "1";
+        let count = 0;
+        let deleteIndex = null;
+
+        // 로컬스토리지에서 환자 목록 불러오기
+        function loadPatients() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // 로컬스토리지에 환자 목록 저장하기
+        function savePatients(patients) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+        }
+
+        // 페이지 로드 시 환자 목록 불러오기
+        let patients = loadPatients();
 
         // "수" 클릭 시 로그인 버튼 표시
         document.getElementById('title').addEventListener('click', function() {
             count++;
             if (count === 3) {
-                document.getElementById('loginSection').style.display = 'block'; // 로그인 폼 보이기
+                document.getElementById('loginSection').style.display = 'block';
             }
         });
 
         // 접수 폼 제출 시
         document.getElementById('receptionForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // 기본 폼 제출 방지
+            event.preventDefault();
             
-            // 입력된 정보 가져오기
             const name = this.name.value;
-            const birthdate = this.birthdate.value; // "YYMMDD" 형식으로 그대로 사용
-            const gender = this.gender.value; // 체크된 성별 선택
+            const birthdate = this.birthdate.value;
+            const gender = this.gender.value;
             const symptoms = this.symptoms.value;
+            const timestamp = new Date().toISOString(); // 접수 시간 추가
 
             // 환자 정보를 배열에 추가
-            patients.push({ name, birthdate, gender, symptoms });
+            patients.push({ name, birthdate, gender, symptoms, timestamp });
+            
+            // 로컬스토리지에 저장
+            savePatients(patients);
 
-            // 환자 목록 표시
-            displayPatients();
+            // 환자 목록 표시 (로그인된 경우에만)
+            if (document.getElementById('patientList').style.display === 'block') {
+                displayPatients();
+            }
 
-            alert('접수가 완료되었습니다!'); // 알림
-            this.reset(); // 폼 초기화
+            alert('접수가 완료되었습니다!');
+            this.reset();
         });
 
         // 로그인 버튼 클릭 시
@@ -220,75 +227,81 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // 사용자 인증
             if (username === correctUsername && password === correctPassword) {
-                document.getElementById('patientList').style.display = 'block'; // 환자 목록 보이기
-                displayPatients(); // 환자 목록 표시
+                document.getElementById('patientList').style.display = 'block';
+                displayPatients();
             } else {
-                alert('잘못된 사용자 이름 또는 비밀번호입니다.'); // 인증 실패 알림
+                alert('잘못된 사용자 이름 또는 비밀번호입니다.');
             }
         });
 
         function displayPatients() {
             const patientsDiv = document.getElementById('patients');
-            patientsDiv.innerHTML = ''; // 기존 목록 초기화
+            patientsDiv.innerHTML = '';
 
-            // 각 환자 정보를 표시
+            if (patients.length === 0) {
+                patientsDiv.innerHTML = '<p style="text-align: center; color: #666;">접수된 환자가 없습니다.</p>';
+                return;
+            }
+
             patients.forEach((patient, index) => {
                 const patientDiv = document.createElement('div');
                 patientDiv.classList.add('patient-item');
                 
-                // 환자 정보 추가: 이름, 생년월일, 성별, 증상
                 const patientInfo = document.createElement('div');
                 patientInfo.classList.add('patient-info');
-                patientInfo.innerHTML = `이름: ${patient.name}, 생년월일: ${patient.birthdate}, 성별: ${patient.gender}<br>증상: ${patient.symptoms}`;
+                
+                // 접수 시간 포맷팅
+                const receptionTime = new Date(patient.timestamp).toLocaleString('ko-KR');
+                
+                patientInfo.innerHTML = `
+                    <strong>${index + 1}번</strong> 이름: ${patient.name}, 생년월일: ${patient.birthdate}, 성별: ${patient.gender}
+                    <br>증상: ${patient.symptoms}
+                    <br><small style="color: #666;">접수시간: ${receptionTime}</small>
+                `;
 
-                // 삭제 버튼 생성
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '삭제';
                 deleteButton.classList.add('delete-button');
                 deleteButton.onclick = function() {
-                    confirmDelete(index); // 삭제 확인 함수 호출
+                    confirmDelete(index);
                 };
 
-                patientDiv.appendChild(patientInfo); // 환자 정보 추가
-                patientDiv.appendChild(deleteButton); // 삭제 버튼 추가
-                patientsDiv.appendChild(patientDiv); // 환자 정보 추가
+                patientDiv.appendChild(patientInfo);
+                patientDiv.appendChild(deleteButton);
+                patientsDiv.appendChild(patientDiv);
             });
         }
 
         function confirmDelete(index) {
-            deleteIndex = index; // 삭제할 환자 인덱스 저장
-            document.getElementById('confirmationDialog').style.display = 'block'; // 확인 대화상자 보이기
+            deleteIndex = index;
+            document.getElementById('confirmationDialog').style.display = 'block';
         }
 
         // 삭제 확인
         document.getElementById('confirmDelete').addEventListener('click', function() {
-            patients.splice(deleteIndex, 1); // 배열에서 환자 제거
-            displayPatients(); // 목록 업데이트
-            document.getElementById('confirmationDialog').style.display = 'none'; // 대화상자 숨기기
+            patients.splice(deleteIndex, 1);
+            savePatients(patients); // 로컬스토리지에 저장
+            displayPatients();
+            document.getElementById('confirmationDialog').style.display = 'none';
+            deleteIndex = null;
         });
 
         // 삭제 취소
         document.getElementById('cancelDelete').addEventListener('click', function() {
-            document.getElementById('confirmationDialog').style.display = 'none'; // 대화상자 숨기기
+            document.getElementById('confirmationDialog').style.display = 'none';
+            deleteIndex = null;
         });
 
-        // 스페이스바나 엔터로 삭제
+        // 키보드 이벤트
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && deleteIndex !== null) {
-                patients.splice(deleteIndex, 1); // 배열에서 환자 제거
-                displayPatients(); // 목록 업데이트
-                document.getElementById('confirmationDialog').style.display = 'none'; // 대화상자 숨기기
-                deleteIndex = null; // 인덱스 초기화
-            } else if (event.key === ' ') {
-                // 스페이스바를 눌렀을 때
-                if (deleteIndex !== null) {
-                    patients.splice(deleteIndex, 1); // 배열에서 환자 제거
-                    displayPatients(); // 목록 업데이트
-                    document.getElementById('confirmationDialog').style.display = 'none'; // 대화상자 숨기기
-                    deleteIndex = null; // 인덱스 초기화
-                }
+            if ((event.key === 'Enter' || event.key === ' ') && deleteIndex !== null) {
+                event.preventDefault();
+                patients.splice(deleteIndex, 1);
+                savePatients(patients); // 로컬스토리지에 저장
+                displayPatients();
+                document.getElementById('confirmationDialog').style.display = 'none';
+                deleteIndex = null;
             }
         });
     </script>
