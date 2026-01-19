@@ -3,6 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>산타마리24의원 접수</title>
+
+    
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
+  authDomain: "santa-c17dd.firebaseapp.com",
+  databaseURL: "https://santa-c17dd-default-rtdb.firebaseio.com",
+  projectId: "santa-c17dd",
+  storageBucket: "santa-c17dd.firebasestorage.app",
+  messagingSenderId: "559395228968",
+  appId: "1:559395228968:web:6a037c35531b9d744d141d",
+  measurementId: "G-GB2SES5TNL"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -293,6 +319,7 @@
 </body>
 
 </html>
+
 
 
 
