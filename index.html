@@ -1,34 +1,42 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>산타마리24의원 접수</title>
-
     
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    <meta charset="UTF-8">
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
-  authDomain: "santa-c17dd.firebaseapp.com",
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병원 접수 사이트</title>
+    
+    <!-- Firebase SDK 추가 -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    
+    <script>
+        // Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",  // 여기에 실제 API 키를 입력하세요
+            authDomain: "santa-c17dd.firebaseapp.com",
   databaseURL: "https://santa-c17dd-default-rtdb.firebaseio.com",
   projectId: "santa-c17dd",
   storageBucket: "santa-c17dd.firebasestorage.app",
   messagingSenderId: "559395228968",
   appId: "1:559395228968:web:6a037c35531b9d744d141d",
   measurementId: "G-GB2SES5TNL"
-};
+        };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+        // Firebase 앱 초기화
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
+</head>
+<body>
+    <h1>병원 접수 시스템</h1>
 
-    
+
+
+    <title>산타마리24의원 접수</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -319,6 +327,7 @@ const analytics = getAnalytics(app);
 </body>
 
 </html>
+
 
 
 
