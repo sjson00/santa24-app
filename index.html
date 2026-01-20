@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 뷰포트 메타 태그 추가 -->
     <title>산타마리24의원 접수</title>
 
     <style>
@@ -25,6 +26,22 @@
         .loading {text-align:center;color:#666;margin:10px 0;}
         .privacy-policy {cursor: pointer; color: #1E88E5; text-align: center; margin-top: 20px; font-size: 16px; }
         .privacy-content { display: none; margin-top: 10px; padding: 10px; background: #F1F8E9; border-radius: 8px; }
+
+        /* 모바일 스타일 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px; /* 패딩을 줄여서 더 많은 공간 확보 */
+            }
+            .form-container {
+                padding-right: 0; /* 오른쪽 패딩 제거 */
+            }
+            .patient-list {
+                width: 100%; /* 환자 목록이 전체 너비를 차지하도록 설정 */
+            }
+            button {
+                padding: 12px; /* 버튼 패딩을 줄여서 더 많은 공간 확보 */
+            }
+        }
     </style>
 </head>
 
@@ -41,7 +58,7 @@
 
         <form id="receptionForm">
             <input type="text" name="name" placeholder="이름" required>
-            <input type="text" name="birthdate" placeholder="생년월일 (예: 990101)" required>
+            <input type="text" name="birthdate" placeholder="생년월일 (예: 990101)" required pattern="\d{6}" maxlength="6" title="6자리 숫자 형식(YYMMDD)로 입력해주세요.">
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="남" required> 남</label>
                 <label><input type="radio" name="gender" value="여" required> 여</label>
@@ -110,7 +127,7 @@
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-    import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+    import { getDatabase, ref, push, onValue, remove, set } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
     const firebaseConfig = {
         apiKey:"AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
@@ -159,11 +176,19 @@
         checkReceptionStatus(); // UI 업데이트
     });
 
-toggleReception.onclick = () => {
-    receptionEnabled = !receptionEnabled; // 상태를 토글
-    checkReceptionStatus(); // UI 업데이트
-    set(receptionStatusRef, receptionEnabled); // Firebase에 상태 저장 (기존 값 덮어쓰기)
-};
+    toggleReception.onclick = () => {
+        receptionEnabled = !receptionEnabled; // 상태를 토글
+        console.log('현재 접수 상태:', receptionEnabled); // 상태 로그
+        checkReceptionStatus(); // UI 업데이트
+        set(receptionStatusRef, receptionEnabled) // Firebase에 상태 저장
+            .then(() => {
+                console.log('Firebase에 상태 저장 성공');
+            })
+            .catch(error => {
+                console.error('Firebase에 상태 저장 실패:', error);
+            });
+    };
+
     function checkReceptionStatus() {
         if (!receptionEnabled) {
             receptionForm.style.pointerEvents = "none";
@@ -256,4 +281,3 @@ toggleReception.onclick = () => {
 </script>
 </body>
 </html>
-
