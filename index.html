@@ -159,12 +159,11 @@
         checkReceptionStatus(); // UI 업데이트
     });
 
-    toggleReception.onclick = () => {
-        receptionEnabled = !receptionEnabled; // 상태를 토글
-        checkReceptionStatus(); // UI 업데이트
-        push(receptionStatusRef, receptionEnabled); // Firebase에 상태 저장
-    };
-
+toggleReception.onclick = () => {
+    receptionEnabled = !receptionEnabled; // 상태를 토글
+    checkReceptionStatus(); // UI 업데이트
+    set(receptionStatusRef, receptionEnabled); // Firebase에 상태 저장 (기존 값 덮어쓰기)
+};
     function checkReceptionStatus() {
         if (!receptionEnabled) {
             receptionForm.style.pointerEvents = "none";
@@ -257,3 +256,4 @@
 </script>
 </body>
 </html>
+
