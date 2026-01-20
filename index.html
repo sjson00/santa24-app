@@ -162,12 +162,13 @@
 
         <div id="receptionControl" style="display:none;text-align:center;">
             <button type="button" id="toggleReception">접수 마감</button>
-            <p id="receptionStatus" style="color:#D32F2F;display:none;">현재 온라인 접수가 중단되었습니다.</p>
+            <p id="receptionStatus" style="color:#D32F2F;display:none;font-size: 2em;">현재 온라인 접수가 중단되었습니다.</p> <!-- 큰 글씨로 변경 -->
         </div>
 
         <form id="receptionForm">
             <input type="text" name="name" placeholder="이름" required>
-            <input type="number" name="birthdate" placeholder="생년월일 (예: 990101)" required pattern="\d{6}" maxlength="6" title="6자리 숫자 형식(YYMMDD)로 입력해주세요.">
+            <input type="text" name="birthdate" placeholder="생년월일 (예: 990101)" required maxlength="6" pattern="\d{6}" title="6자리 숫자 형식(YYMMDD)로 입력해주세요." 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);"> <!-- 6자리 숫자만 입력 -->
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="남" required> 남</label>
                 <label><input type="radio" name="gender" value="여" required> 여</label>
