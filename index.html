@@ -124,8 +124,7 @@
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-    const patientsRef = ref(database, 'patients');
-    const receptionStatusRef = ref(database, 'receptionStatus'); // 접수 상태를 저장할 위치
+    const patientsRef = ref(database,'patients');
 
     let receptionEnabled = true;
     let count = 0;
@@ -153,16 +152,9 @@
         } else alert("로그인 실패");
     };
 
-    // 접수 상태 가져오기
-    onValue(receptionStatusRef, snapshot => {
-        receptionEnabled = snapshot.val() !== null ? snapshot.val() : true; // 접수 상태 설정
-        checkReceptionStatus(); // UI 업데이트
-    });
-
     toggleReception.onclick = () => {
-        receptionEnabled = !receptionEnabled; // 상태를 토글
-        checkReceptionStatus(); // UI 업데이트
-        push(receptionStatusRef, receptionEnabled); // Firebase에 상태 저장
+        receptionEnabled = !receptionEnabled;
+        checkReceptionStatus();
     };
 
     function checkReceptionStatus() {
@@ -257,3 +249,4 @@
 </script>
 </body>
 </html>
+
