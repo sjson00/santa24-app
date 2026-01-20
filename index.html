@@ -1,361 +1,185 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>산타마리24의원 접수</title>
+<meta charset="UTF-8">
+<title>산타마리24의원 접수</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #E3F2FD;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            display: flex;
-            max-width: 900px;
-            margin: 40px auto;
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .form-container {
-            flex: 1;
-            padding-right: 20px;
-        }
-        .patient-list {
-            width: 400px;
-            padding: 10px;
-            background: #F1F8E9;
-            border-radius: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-        }
-        h2 {
-            text-align: center;
-            color: #1E88E5;
-            cursor: pointer;
-        }
-        .notice {
-            margin: 10px 0;
-            text-align: center;
-            color: #FF5722;
-            font-size: 14px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .gender-container label {
-            margin: 0 20px;
-            font-size: 18px;
-        }
-        .gender-container input {
-            transform: scale(1.5);
-            margin-right: 5px;
-        }
-        button {
-            margin-top: 16px;
-            width: 100%;
-            padding: 14px;
-            background: #1E88E5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #1565C0;
-        }
-        .patient-item {
-            border-bottom: 1px solid #ccc;
-            padding: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .patient-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .delete-button {
-            background: #FF5722;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            padding: 3px 6px;
-            cursor: pointer;
-            font-size: 14px;
-            width: 80px;
-        }
-        .delete-button:hover {
-            background: #D32F2F;
-        }
-        .confirmation {
-            display: none;
-            margin-top: 20px;
-            padding: 10px;
-            background: #FFEB3B;
-            border-radius: 8px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .login {
-            display: none;
-        }
-        .loading {
-            text-align: center;
-            color: #666;
-            margin: 10px 0;
-        }
-    </style>
+<style>
+body {font-family: Arial, sans-serif;background:#E3F2FD;margin:0;padding:0;}
+.container {display:flex;max-width:900px;margin:40px auto;background:white;padding:24px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+.form-container {flex:1;padding-right:20px;}
+.patient-list {width:400px;padding:10px;background:#F1F8E9;border-radius:8px;max-height:400px;overflow-y:auto;display:none;}
+h2 {text-align:center;color:#1E88E5;cursor:pointer;}
+.notice {margin:10px 0;text-align:center;color:#FF5722;font-size:14px;}
+input, textarea {width:100%;padding:12px;margin-top:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;}
+.gender-container {display:flex;justify-content:center;margin-top:10px;}
+.gender-container label {margin:0 20px;font-size:18px;}
+.gender-container input {transform:scale(1.5);margin-right:5px;}
+button {margin-top:16px;width:100%;padding:14px;background:#1E88E5;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;}
+button:hover {background:#1565C0;}
+.patient-item {border-bottom:1px solid #ccc;padding:8px 0;display:flex;justify-content:space-between;align-items:center;}
+.patient-info {flex:1;font-size:14px;}
+.delete-button {background:#FF5722;border:none;color:white;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:13px;width:70px;}
+.confirmation {display:none;padding:12px;background:#FFEB3B;border-radius:8px;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;}
+.login {display:none;}
+.loading {text-align:center;color:#666;margin:10px 0;}
+</style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="form-container">
-            <h2 id="title">산타마리24의원 온라인 접수</h2>
-            <p class="notice">접수가 정상적으로 되었는지 확인을 위해<br>병원에 도착시 접수 상태를 꼭 확인해 주세요.</p>
-            
-            <form id="receptionForm">
-                <input type="text" name="name" placeholder="이름" required>
-                
-                <input type="text" name="birthdate" placeholder="생년월일 (예: 990101)" required pattern="\d{6}" title="형식: YYMMDD, 숫자 6자리로 입력해주세요.">
+<div class="container">
+<div class="form-container">
+<h2 id="title">산타마리24의원 온라인 접수</h2>
+<p class="notice">접수가 정상적으로 되었는지 확인을 위해<br>병원 도착 시 접수 상태를 꼭 확인해 주세요.</p>
 
-                <div class="gender-container">
-                    <label>
-                        <input type="radio" name="gender" value="남" required> 남
-                    </label>
-                    <label>
-                        <input type="radio" name="gender" value="여" required> 여
-                    </label>
-                </div>
+<div id="receptionControl" style="display:none;text-align:center;">
+<button type="button" id="toggleReception">접수 마감</button>
+<p id="receptionStatus" style="color:#D32F2F;display:none;">현재 온라인 접수가 중단되었습니다.</p>
+</div>
 
-                <textarea name="symptoms" placeholder="증상" required></textarea>
-                <button type="submit">접수하기</button>
-            </form>
+<form id="receptionForm">
+<input type="text" name="name" placeholder="이름" required>
+<input type="text" name="birthdate" placeholder="생년월일 (예: 990101)" required>
+<div class="gender-container">
+<label><input type="radio" name="gender" value="남" required> 남</label>
+<label><input type="radio" name="gender" value="여" required> 여</label>
+</div>
+<textarea name="symptoms" placeholder="증상" required></textarea>
+<button type="submit">접수하기</button>
+</form>
 
-            <div class="login" id="loginSection">
-                <h3>병원 직원 로그인</h3>
-                <input type="text" id="username" placeholder="사용자 이름" required>
-                <input type="password" id="password" placeholder="비밀번호" required>
-                <button type="button" id="loginButton">로그인</button>
-            </div>
-        </div>
+<div class="login" id="loginSection">
+<h3>병원 직원 로그인</h3>
+<input type="text" id="username" placeholder="사용자 이름">
+<input type="password" id="password" placeholder="비밀번호">
+<button type="button" id="loginButton">로그인</button>
+</div>
+</div>
 
-        <div class="patient-list" id="patientList">
-            <h3>접수된 환자 목록</h3>
-            <div class="loading" id="loadingMessage">데이터를 불러오는 중...</div>
-            <div id="patients"></div>
-        </div>
+<div class="patient-list" id="patientList">
+<h3>접수된 환자 목록</h3>
+<div class="loading" id="loadingMessage">데이터 불러오는 중...</div>
+<div id="patients"></div>
+</div>
+</div>
+
+<div class="confirmation" id="confirmationDialog">
+<p>삭제하시겠습니까?</p>
+<button id="confirmDelete">예</button>
+<button id="cancelDelete">아니오</button>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+const firebaseConfig = {
+ apiKey:"AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
+ authDomain:"santa-c17dd.firebaseapp.com",
+ databaseURL:"https://santa-c17dd-default-rtdb.firebaseio.com",
+ projectId:"santa-c17dd",
+ storageBucket:"santa-c17dd.firebasestorage.app",
+ messagingSenderId:"559395228968",
+ appId:"1:559395228968:web:6a037c35531b9d744d141d"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const patientsRef = ref(database,'patients');
+
+let receptionEnabled=true;
+let count=0;
+let deleteKey=null;
+
+const confirmDeleteBtn = document.getElementById("confirmDelete");
+const cancelDeleteBtn = document.getElementById("cancelDelete");
+
+title.onclick=()=>{ if(++count===3) loginSection.style.display='block'; };
+
+loginButton.onclick=()=>{
+ if(username.value==="1" && password.value==="1"){
+  patientList.style.display="block";
+  receptionControl.style.display="block";
+  loadPatients();
+ } else alert("로그인 실패");
+};
+
+toggleReception.onclick=()=>{
+ receptionEnabled=!receptionEnabled;
+ if(!receptionEnabled){
+  receptionForm.style.pointerEvents="none";
+  receptionForm.style.opacity="0.5";
+  receptionStatus.style.display="block";
+  toggleReception.innerText="접수 시작";
+ }else{
+  receptionForm.style.pointerEvents="auto";
+  receptionForm.style.opacity="1";
+  receptionStatus.style.display="none";
+  toggleReception.innerText="접수 마감";
+ }
+};
+
+receptionForm.onsubmit=e=>{
+ e.preventDefault();
+ if(!receptionEnabled) return alert("현재 접수가 중단되었습니다.");
+ push(patientsRef,{
+  name:receptionForm.name.value,
+  birthdate:receptionForm.birthdate.value,
+  gender:receptionForm.gender.value,
+  symptoms:receptionForm.symptoms.value,
+  timestamp:new Date().toISOString()
+ });
+ alert("접수 완료");
+ receptionForm.reset();
+};
+
+function loadPatients(){
+ onValue(patientsRef,s=>{
+  patients.innerHTML="";
+  s.forEach(c=>{
+   const d=c.val();
+   patients.innerHTML+=`
+   <div class="patient-item">
+    <div class="patient-info">
+     <b>${d.name}</b> / ${d.birthdate} / ${d.gender}<br>
+     증상: ${d.symptoms}
     </div>
+    <button class="delete-button" onclick="confirmDelete('${c.key}')">삭제</button>
+   </div>`;
+  });
+ });
+}
 
-    <div class="confirmation" id="confirmationDialog">
-        <p>삭제하시겠습니까?</p>
-        <button type="button" id="confirmDelete">예</button>
-        <button type="button" id="cancelDelete">아니오</button>
-    </div>
+window.confirmDelete = (key)=>{
+ deleteKey=key;
+ confirmationDialog.style.display="block";
+ confirmDeleteBtn.focus();
+};
 
-    <!-- Firebase SDK (v9 모듈 방식) -->
-    <script type="module">
-        // Firebase 모듈 import
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+confirmDeleteBtn.onclick = ()=>{
+ if(!deleteKey) return;
+ const r = ref(database,'patients/'+deleteKey);
+ remove(r);
+ confirmationDialog.style.display="none";
+ deleteKey=null;
+};
 
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyBJCjqUzPyaNqj0ZKUeKm1eJnm4dI4rwNc",
-            authDomain: "santa-c17dd.firebaseapp.com",
-            databaseURL: "https://santa-c17dd-default-rtdb.firebaseio.com",
-            projectId: "santa-c17dd",
-            storageBucket: "santa-c17dd.firebasestorage.app",
-            messagingSenderId: "559395228968",
-            appId: "1:559395228968:web:6a037c35531b9d744d141d",
-            measurementId: "G-GB2SES5TNL"
-        };
+cancelDeleteBtn.onclick = ()=>{
+ confirmationDialog.style.display="none";
+ deleteKey=null;
+};
 
-        // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const patientsRef = ref(database, 'patients');
-
-        const correctUsername = "1";
-        const correctPassword = "1";
-        let count = 0;
-        let deleteKey = null;
-        let isLoggedIn = false;
-
-        // "수" 클릭 시 로그인 버튼 표시
-        document.getElementById('title').addEventListener('click', function() {
-            count++;
-            if (count === 3) {
-                document.getElementById('loginSection').style.display = 'block';
-            }
-        });
-
-        // 접수 폼 제출 시
-        document.getElementById('receptionForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const name = this.name.value;
-            const birthdate = this.birthdate.value;
-            const gender = this.gender.value;
-            const symptoms = this.symptoms.value;
-            const timestamp = new Date().toISOString();
-
-            // Firebase에 데이터 저장
-            const newPatient = {
-                name: name,
-                birthdate: birthdate,
-                gender: gender,
-                symptoms: symptoms,
-                timestamp: timestamp
-            };
-
-            push(patientsRef, newPatient)
-                .then(() => {
-                    alert('접수가 완료되었습니다!');
-                    this.reset();
-                })
-                .catch((error) => {
-                    console.error('접수 오류:', error);
-                    alert('접수 중 오류가 발생했습니다. 다시 시도해주세요.');
-                });
-        });
-
-        // 로그인 버튼 클릭 시
-        document.getElementById('loginButton').addEventListener('click', function() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === correctUsername && password === correctPassword) {
-                isLoggedIn = true;
-                document.getElementById('patientList').style.display = 'block';
-                loadPatients();
-            } else {
-                alert('잘못된 사용자 이름 또는 비밀번호입니다.');
-            }
-        });
-
-        // Firebase에서 환자 목록 실시간 불러오기
-        function loadPatients() {
-            document.getElementById('loadingMessage').style.display = 'block';
-            
-            onValue(patientsRef, (snapshot) => {
-                const patientsDiv = document.getElementById('patients');
-                patientsDiv.innerHTML = '';
-                document.getElementById('loadingMessage').style.display = 'none';
-
-                if (!snapshot.exists()) {
-                    patientsDiv.innerHTML = '<p style="text-align: center; color: #666;">접수된 환자가 없습니다.</p>';
-                    return;
-                }
-
-                const patients = [];
-                snapshot.forEach((childSnapshot) => {
-                    patients.push({
-                        key: childSnapshot.key,
-                        data: childSnapshot.val()
-                    });
-                });
-
-                // 시간순으로 정렬 (최신순)
-                patients.sort((a, b) => new Date(a.data.timestamp) - new Date(b.data.timestamp));
-
-                // 환자 목록 표시
-                patients.forEach((patient, index) => {
-                    const patientDiv = document.createElement('div');
-                    patientDiv.classList.add('patient-item');
-                    
-                    const patientInfo = document.createElement('div');
-                    patientInfo.classList.add('patient-info');
-                    
-                    const receptionTime = new Date(patient.data.timestamp).toLocaleString('ko-KR');
-                    
-                    patientInfo.innerHTML = `
-                        <strong>${index + 1}번</strong> 이름: ${patient.data.name}, 생년월일: ${patient.data.birthdate}, 성별: ${patient.data.gender}
-                        <br>증상: ${patient.data.symptoms}
-                        <br><small style="color: #666;">접수시간: ${receptionTime}</small>
-                    `;
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = '삭제';
-                    deleteButton.classList.add('delete-button');
-                    deleteButton.onclick = function() {
-                        confirmDelete(patient.key);
-                    };
-
-                    patientDiv.appendChild(patientInfo);
-                    patientDiv.appendChild(deleteButton);
-                    patientsDiv.appendChild(patientDiv);
-                });
-            }, (error) => {
-                console.error('데이터 불러오기 오류:', error);
-                document.getElementById('loadingMessage').textContent = '데이터를 불러올 수 없습니다.';
-            });
-        }
-
-        function confirmDelete(key) {
-            deleteKey = key;
-            document.getElementById('confirmationDialog').style.display = 'block';
-        }
-
-        // 삭제 확인
-        document.getElementById('confirmDelete').addEventListener('click', function() {
-            if (deleteKey) {
-                const patientToDelete = ref(database, 'patients/' + deleteKey);
-                remove(patientToDelete)
-                    .then(() => {
-                        console.log('환자 삭제 완료');
-                    })
-                    .catch((error) => {
-                        console.error('삭제 오류:', error);
-                        alert('삭제 중 오류가 발생했습니다.');
-                    });
-            }
-            document.getElementById('confirmationDialog').style.display = 'none';
-            deleteKey = null;
-        });
-
-        // 삭제 취소
-        document.getElementById('cancelDelete').addEventListener('click', function() {
-            document.getElementById('confirmationDialog').style.display = 'none';
-            deleteKey = null;
-        });
-
-        // 키보드 이벤트
-        document.addEventListener('keydown', function(event) {
-            if ((event.key === 'Enter' || event.key === ' ') && deleteKey !== null) {
-                event.preventDefault();
-                const patientToDelete = ref(database, 'patients/' + deleteKey);
-                remove(patientToDelete)
-                    .then(() => {
-                        console.log('환자 삭제 완료');
-                    })
-                    .catch((error) => {
-                        console.error('삭제 오류:', error);
-                    });
-                document.getElementById('confirmationDialog').style.display = 'none';
-                deleteKey = null;
-            }
-        });
-    </script>
+document.addEventListener('keydown',e=>{
+ if(!deleteKey) return;
+ if(e.key==="Enter"||e.key===" "){
+  e.preventDefault();
+  confirmDeleteBtn.click();
+ }
+ if(e.key==="Escape"){
+  e.preventDefault();
+  cancelDeleteBtn.click();
+ }
+});
+</script>
 </body>
 </html>
