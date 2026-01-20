@@ -187,7 +187,6 @@
 
     <div class="patient-list" id="patientList">
         <h3>접수된 환자 목록</h3>
-        <div class="loading" id="loadingMessage">데이터 불러오는 중...</div>
         <div id="patients"></div>
     </div>
 </div>
@@ -245,7 +244,7 @@
     title.onclick = () => { if (++count === 3) loginSection.style.display = 'block'; };
 
     loginButton.onclick = () => {
-        if (username.value === "1" && password.value === "1") {
+        if (username.value === "손석준" && password.value === "000817") {
             patientList.style.display = "block";
             receptionControl.style.display = "block";
             loadPatients();
@@ -365,3 +364,4 @@
 </script>
 </body>
 </html>
+
